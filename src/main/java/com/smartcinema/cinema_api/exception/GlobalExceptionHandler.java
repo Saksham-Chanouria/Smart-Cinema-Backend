@@ -1,7 +1,9 @@
 package com.smartcinema.cinema_api.exception;
 
+import com.smartcinema.cinema_api.dto.LoginResponse;
 import com.smartcinema.cinema_api.dto.SignupResponse;
 
+import org.apache.juli.logging.Log;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +37,24 @@ public class GlobalExceptionHandler {
         response.setTimeStamp(System.currentTimeMillis());
 
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<LoginResponse> handleInvalidCredentials(InvalidCredentialsException e){
+        LoginResponse response = new LoginResponse();
+        response.setSuccess(false);
+        response.setStatusCode(401);
+        response.setTimestamp(System.currentTimeMillis());
+        response.setMessage(e.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<LoginResponse> handleInvalidRequest(InvalidRequestException e){
+        LoginResponse response = new LoginResponse();
+        response.setStatusCode(400);
+        response.setSuccess(false);
+        response.setMessage(e.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

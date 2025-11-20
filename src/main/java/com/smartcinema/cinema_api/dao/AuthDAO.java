@@ -7,4 +7,5 @@ public interface AuthDAO {
     User save(User theUser);
     boolean existsByEmail(String email);
     Role saveRole(Role role);
+    User findByEmail(String email);
 }

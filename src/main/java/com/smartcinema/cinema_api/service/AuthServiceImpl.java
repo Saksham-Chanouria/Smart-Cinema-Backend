@@ -2,9 +2,13 @@ package com.smartcinema.cinema_api.service;
 
 
 import com.smartcinema.cinema_api.dao.AuthDAO;
+import com.smartcinema.cinema_api.dto.LoginRequest;
+import com.smartcinema.cinema_api.dto.LoginResponse;
 import com.smartcinema.cinema_api.dto.SignupResponse;
 import com.smartcinema.cinema_api.entities.Role;
 import com.smartcinema.cinema_api.entities.User;
+import com.smartcinema.cinema_api.exception.InvalidCredentialsException;
+import com.smartcinema.cinema_api.exception.InvalidRequestException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
@@ -48,6 +52,14 @@ public class AuthServiceImpl implements AuthService{
             return signupResponse;
         }
 
+        // Clean the email
+        String email = theUser.getEmail().trim().toLowerCase();
+
+        if(!email.matches("^[A-Za-z0-9._%+-]+@gmail\\.com$")) {
+            throw new InvalidRequestException("Invalid email format");
+        }
+        theUser.setEmail(email);
+
         if(authDAO.existsByEmail(theUser.getEmail())){
             signupResponse.setSuccess(false);
             signupResponse.setStatusCode(409);
@@ -63,14 +75,12 @@ public class AuthServiceImpl implements AuthService{
                 theUser.setCreatedAt(LocalDateTime.now());
                 theUser.setUpdatedAt(LocalDateTime.now());
 
-                User savedUser = authDAO.save(theUser);
-
                 Role savedRole = new Role("User");
-                savedRole.setUser(savedUser);
+                savedRole.setUser(theUser);
 
-                savedUser.getRoles().add(savedRole);
+                theUser.getRoles().add(savedRole);
 
-                authDAO.save(savedUser);
+                authDAO.save(theUser);
                 signupResponse.setSuccess(true);
                 signupResponse.setStatusCode(201);
                 signupResponse.setMessage("User registered successfully!");
@@ -82,5 +92,27 @@ public class AuthServiceImpl implements AuthService{
 
         return signupResponse;
 
+    }
+
+    public LoginResponse checkUser(LoginRequest loginRequest){
+        // Clean email
+        String email = loginRequest.getEmail().trim().toLowerCase();
+        if(!email.matches("^[A-Za-z0-9._%+-]+@gmail\\.com$")) {
+            throw new InvalidRequestException("Invalid email format");
+        }
+
+        if(loginRequest.getPassword()==null || loginRequest.getPassword().isEmpty()){
+            throw new InvalidRequestException("Password cannot be empty");
+        }
+
+        User theUser = authDAO.findByEmail(email);
+        if(theUser == null){
+            throw new InvalidCredentialsException("Invalid Username or Password!");
+        }
+
+        if(!bCryptPasswordEncoder.matches(loginRequest.getPassword(),theUser.getPassword())){
+            throw new InvalidCredentialsException("Invalid Username or Password!");
+        }
+        return new LoginResponse(200, "Login Successful",true,System.currentTimeMillis());
     }
 }

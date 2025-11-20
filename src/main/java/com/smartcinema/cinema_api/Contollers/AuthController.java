@@ -1,5 +1,7 @@
 package com.smartcinema.cinema_api.Contollers;
 
+import com.smartcinema.cinema_api.dto.LoginRequest;
+import com.smartcinema.cinema_api.dto.LoginResponse;
 import com.smartcinema.cinema_api.dto.SignupResponse;
 import com.smartcinema.cinema_api.entities.User;
 import com.smartcinema.cinema_api.service.AuthService;
@@ -20,6 +22,12 @@ public class AuthController {
     @PostMapping("/signup")
     public SignupResponse registerUser(@RequestBody User theUser){
         return authService.saveUser(theUser);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse checkUser(@RequestBody LoginRequest loginRequest){
+        System.out.println(loginRequest);
+        return authService.checkUser(loginRequest);
     }
 
 }

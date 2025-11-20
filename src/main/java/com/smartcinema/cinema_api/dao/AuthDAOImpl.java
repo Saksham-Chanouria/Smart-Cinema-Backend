@@ -37,4 +37,13 @@ public class AuthDAOImpl implements AuthDAO{
         entityManager.persist(theRole);
         return  theRole;
     }
+
+    @Override
+    public User findByEmail(String email){
+        TypedQuery<User> theQuery = entityManager.createQuery("from User where email = :email",User.class);
+        theQuery.setParameter("email",email);
+        List<User> users = theQuery.getResultList();
+
+        return users.isEmpty() ? null : users.get(0);
+    }
 }
