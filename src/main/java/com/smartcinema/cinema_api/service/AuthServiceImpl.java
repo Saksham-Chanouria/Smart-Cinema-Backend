@@ -9,9 +9,9 @@ import com.smartcinema.cinema_api.entities.Role;
 import com.smartcinema.cinema_api.entities.User;
 import com.smartcinema.cinema_api.exception.InvalidCredentialsException;
 import com.smartcinema.cinema_api.exception.InvalidRequestException;
+import com.smartcinema.cinema_api.security.JWT;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -106,6 +106,12 @@ public class AuthServiceImpl implements AuthService{
         }
 
         User theUser = authDAO.findByEmail(email);
+
+        String fullName = theUser.getFullName();
+        String firstName = fullName.split(" ")[0];
+
+        String token = com.smartcinema.cinema_api.security.JWT.generateToken(theUser);
+
         if(theUser == null){
             throw new InvalidCredentialsException("Invalid Username or Password!");
         }
@@ -113,6 +119,6 @@ public class AuthServiceImpl implements AuthService{
         if(!bCryptPasswordEncoder.matches(loginRequest.getPassword(),theUser.getPassword())){
             throw new InvalidCredentialsException("Invalid Username or Password!");
         }
-        return new LoginResponse(200, "Login Successful",true,System.currentTimeMillis());
+        return new LoginResponse(200, "Login Successful",true,System.currentTimeMillis(),token,firstName);
     }
 }
