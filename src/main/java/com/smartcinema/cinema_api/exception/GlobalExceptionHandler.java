@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 
         SignupResponse response = new SignupResponse();
         response.setSuccess(false);
-        response.setMessage("Internal Server Error: " + ex.getMessage());
+        response.setMessage("Internal Server Error: ");
         response.setStatusCode(500);
         response.setTimeStamp(System.currentTimeMillis());
 

@@ -4,27 +4,40 @@ import com.smartcinema.cinema_api.entities.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Base64;
 import java.security.Key;
 
+@Component
 public class JWT {
-    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
+    @Value("${jwt.secret}")
+    private String SECRET;
+
     private static final long EXPIRATION_TIME = 3600000; // 1 hour
 
-    public static String generateToken(User theUser) {
+    private Key getSigningKey() {
+        byte[] decodedKey = Base64.getDecoder().decode(SECRET);
+        return Keys.hmacShaKeyFor(decodedKey);
+    }
+
+
+    public String generateToken(User theUser) {
         return Jwts.builder()
                 .setSubject(theUser.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(key)
+                .signWith(getSigningKey(),SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public static String validateToken(String token) {
+    public String validateToken(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody()

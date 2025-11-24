@@ -107,16 +107,18 @@ public class AuthServiceImpl implements AuthService{
 
         User theUser = authDAO.findByEmail(email);
 
-        String fullName = theUser.getFullName();
-        String firstName = fullName.split(" ")[0];
-
-        String token = com.smartcinema.cinema_api.security.JWT.generateToken(theUser);
-
         if(theUser == null){
             throw new InvalidCredentialsException("Invalid Username or Password!");
         }
 
+        String fullName = theUser.getFullName();
+        String firstName = fullName.split(" ")[0];
+
+        String token = new JWT().generateToken(theUser);
+
         if(!bCryptPasswordEncoder.matches(loginRequest.getPassword(),theUser.getPassword())){
+            System.out.println(loginRequest.getPassword());
+            System.out.println(theUser.getPassword());
             throw new InvalidCredentialsException("Invalid Username or Password!");
         }
         return new LoginResponse(200, "Login Successful",true,System.currentTimeMillis(),token,firstName);
